@@ -64,12 +64,12 @@ def register_resolution_tools(
 
     @mcp.tool(
         name="start_resolution",
-        description="Trigger an asynchronous analysis/resolution job for a service issue.",
+        description="Initiates a diagnosis and resolution process for a reported application issue. Returns a JSON object containing a 'job_id' which is required for subsequent status checks.",
     )
     async def start_resolution(
-        hostname: Annotated[str, Field(description="Hostname or identifier of the affected system.")],
-        error_code: Annotated[str, Field(description="Error code or shorthand identifier for the issue.")],
-        issue_description: Annotated[str, Field(description="Detailed description of the observed issue.")],
+        hostname: Annotated[str, Field(description="The hostname or service identifier where the issue is occurring (e.g., 'web-server-01').")],
+        error_code: Annotated[str, Field(description="The specific error code or signal identifier (e.g., '500', 'CONNECTION_REFUSED').")],
+        issue_description: Annotated[str, Field(description="A detailed natural language description of the problem to guide the analysis.")],
         ctx: Context,
     ) -> dict[str, str]:
         """Launch a downstream resolution job and return its job ID."""
@@ -108,10 +108,10 @@ def register_resolution_tools(
 
     @mcp.tool(
         name="check_resolution_status",
-        description="Check the latest status for a previously launched resolution job.",
+        description="Polls the status of a previously started resolution job to determine if it is still running or has completed. Requires the 'job_id'.",
     )
     async def check_resolution_status(
-        job_id: Annotated[str, Field(description="Job identifier returned by start_resolution.")],
+        job_id: Annotated[str, Field(description="The unique job identifier returned by the start_resolution tool.")],
     ) -> dict[str, str]:
         """Return the current lifecycle state for the requested job."""
 
@@ -137,10 +137,10 @@ def register_resolution_tools(
 
     @mcp.tool(
         name="get_resolution_reasoning",
-        description="Retrieve the agent's detailed reasoning and remediation steps for a job.",
+        description="Retrieves the full technical analysis, reasoning, and recommended remediation steps for a job. Best used after the job status is 'COMPLETED'.",
     )
     async def get_resolution_reasoning(
-        job_id: Annotated[str, Field(description="Job identifier returned by start_resolution.")],
+        job_id: Annotated[str, Field(description="The unique job identifier returned by the start_resolution tool.")],
     ) -> dict[str, str]:
         """Return diagnostic/analysis text captured by the downstream agent."""
 
